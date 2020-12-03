@@ -2,13 +2,13 @@ package conf
 
 import (
 	"github.com/spf13/viper"
-	"github.com/zenfire-cn/commkit/tool"
+	"github.com/zenfire-cn/commkit/utility"
 	"log"
 	"strings"
 )
 
 func Init(fileName string) {
-	path := tool.ExePath(fileName)
+	path := utility.ExePath(fileName)
 
 	if path == "" {
 		log.Fatal("Conf Error: Could Not Found Config File.")

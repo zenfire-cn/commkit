@@ -19,6 +19,7 @@ func selectAll() {
 			fmt.Println(item)
 		}
 	}
+
 }
 
 func main() {
