@@ -8,9 +8,9 @@ import (
 )
 
 type Option struct {
-	MaxIdleConn int  // 最大空闲连接
-	MaxOpenConn int  // 最大连接数
-	MaxLifeTime int  // 空闲保活时间
+	MaxIdleConn int // 最大空闲连接
+	MaxOpenConn int // 最大连接数
+	MaxLifeTime int // 空闲保活时间
 }
 
 var (
@@ -25,7 +25,7 @@ func NewOption() *Option {
 	}
 }
 
-func GetDB() *gorm.DB{
+func GetDB() *gorm.DB {
 	return db
 }
 
@@ -38,10 +38,6 @@ func Init(dbType, dsn string, option *Option) error {
 		db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	}
 
-	if err != nil {
-		return err
-	}
-
 	dbPool, _ := db.DB()
 
 	// SetMaxIdleConns 设置空闲连接池中连接的最大数量
@@ -52,6 +48,10 @@ func Init(dbType, dsn string, option *Option) error {
 
 	// SetConnMaxLifetime 设置了连接可复用的最大时间
 	dbPool.SetConnMaxLifetime(time.Duration(option.MaxLifeTime) * time.Second)
+
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

@@ -3,19 +3,8 @@ package utility
 import (
 	"os"
 	"path/filepath"
+	"strings"
 )
-
-/**
- * @description: 获取 项目根目录或可执行文件 + 该文件名 的绝对路径
- *   编译后 os.Executable可以得到当前可执行文件的绝对路径，如果是编译后运行，根据该绝对路径判断配置文件是否存在
- * 	 开发时（未手动编译，go run运行时），os.Executable 只能获取到临时编译路径，所以用 os.Getwd 加上文件名即可得到配置文件
- *	 但是在某些情况下，例如单元测试的时候，程序在某个包下运行，os.Getwd 获取到的是对应包的路径而不是项目的根路径，向上遍历程序运行的路径，得到正确的配置文件路径
- * @author: Lorin
- * @time: 2020/11/20 上午11:03
- */
-
-
-
 
 func GetExePath() string {
 	exePath, err := os.Executable()
@@ -57,8 +46,25 @@ func IsDir(path string) bool {
 	return s.IsDir()
 }
 
-// 从工作路径向上递归查找文件，返回文件绝对路径
-func RecursiveFind(fileName string) string {
+// 从路径向上递归查找文件，返回文件绝对路径
+func RecursiveFind(path, fileName string) string {
+	sp := string(os.PathSeparator)
+	pathSplits := strings.Split(path+fileName, sp)
 
+	for i := len(pathSplits); i > 0; i-- {
+		filePath := strings.Join(pathSplits[0:i], sp) + sp + fileName
+		if PathFileExists(filePath) {
+			return filePath
+		}
+	}
 	return ""
+}
+
+func FindConfigFile(fileName string) string {
+	var path string
+	path = RecursiveFind(GetExePath(), fileName)
+	if path == "" {
+		return RecursiveFind(GetWorkDir(), fileName)
+	}
+	return path
 }

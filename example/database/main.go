@@ -1,40 +1,21 @@
 package main
 
 import (
-	"github.com/zenfire-cn/commkit/database"
 	"fmt"
-	"log"
+	"github.com/zenfire-cn/commkit/database"
 )
 
 func main() {
-	dsn := "sqlserver://sa:Helloworld555@127.0.0.1:1433?database=opermon&connection+timeout=30"
-	err := database.Init("mssql", dsn, database.NewOption())
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	type Result struct {
-		ID   int
-		Name string
+	// 初始化
+	dsn := "sqlserver://sa:Joker8133xx@127.0.0.1:1433?database=test&connection+timeout=30"
+	// dsn := "root:joker8133xx@tcp(127.0.0.1:3306)/test?charset=utf8&parseTime=True&loc=Local" // mysql
+	if err := database.Init("mssql", dsn, database.NewOption()); err != nil {
+		fmt.Println("err", err)
 	}
 
 	db := database.GetDB()
-	var result Result
-	db.Raw("SELECT id, name FROM users WHERE id = ?", 6).Scan(&result)
-	fmt.Printf("%+v\n", result)
+	var result []map[string]interface{}
+	db.Raw("SELECT * FROM users").Find(&result)
 
-
-	fmt.Printf("%+v\n", db)
-
-	var results []map[string]interface{}
-	db.Table("users").Find(&results)
-
-	for _, r := range results {
-		for k, v := range r {
-			fmt.Printf("%s => %v, ", k, v)
-		}
-		fmt.Println()
-	}
-
+	fmt.Println(result)
 }
