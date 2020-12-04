@@ -1,41 +1,40 @@
 package main
 
 import (
-	"fmt"
 	"github.com/zenfire-cn/commkit/database"
+	"fmt"
+	"log"
 )
 
-func selectAll() {
-	db := database.DB()
-	rows, err := db.Raw("select * from users").Rows()
+func main() {
+	dsn := "sqlserver://sa:Helloworld555@127.0.0.1:1433?database=opermon&connection+timeout=30"
+	err := database.Init("mssql", dsn, database.NewOption())
 
 	if err != nil {
-		fmt.Println("err:", err)
-	} else {
-		defer rows.Close()
-
-		data := database.RowsToMaps(rows)
-		for _, item := range data {
-			fmt.Println(item)
-		}
+		log.Fatal(err)
 	}
 
-}
+	type Result struct {
+		ID   int
+		Name string
+	}
 
-func main() {
-	// 配置
-	option := &database.Option{
-		database.DBType.MSSQL,
-		"127.0.0.1", "1433",
-		"SA", "123456",
-		"test", "", true,
-		0, 0, 0}
+	db := database.GetDB()
+	var result Result
+	db.Raw("SELECT id, name FROM users WHERE id = ?", 6).Scan(&result)
+	fmt.Printf("%+v\n", result)
 
-	// 初始化
-	err := database.Init(option)
-	fmt.Println(err)
-	// 失败后不断重连的初始化
-	// database.InitUntilSuccess(option, 5 * time.Second)
 
-	selectAll()
+	fmt.Printf("%+v\n", db)
+
+	var results []map[string]interface{}
+	db.Table("users").Find(&results)
+
+	for _, r := range results {
+		for k, v := range r {
+			fmt.Printf("%s => %v, ", k, v)
+		}
+		fmt.Println()
+	}
+
 }
