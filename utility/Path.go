@@ -3,7 +3,6 @@ package utility
 import (
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 /**
@@ -14,43 +13,52 @@ import (
  * @author: Lorin
  * @time: 2020/11/20 上午11:03
  */
-func ExePath(fileName string) string {
-	sp := string(os.PathSeparator)
-	// 编译后 os.Executable可以得到当前可执行文件的绝对路径
-	executablePath, _ := os.Executable()
-	executablePath, _ = filepath.EvalSymlinks(filepath.Dir(executablePath))
-	executablePath += sp + fileName
 
-	if pathExists(executablePath) {
-		// 如果是编译后运行，根据该绝对路径判断配置文件是否存在，存在则初始化
-		return executablePath
-	} else {
-		splits := strings.Split(executablePath, sp)
-		for i := len(splits); i > 0; i-- {
-			path := strings.Join(splits[0:i], sp) + sp + fileName
-			if pathExists(path) {
-				return path
-			}
-		}
-		pwd, _ := os.Getwd()
-		splits = strings.Split(pwd, sp)
-		for i := len(splits); i > 0; i-- {
-			path := strings.Join(splits[0:i], sp) + sp + fileName
-			if pathExists(path) {
-				return path
-			}
-		}
+
+
+
+func GetExePath() string {
+	exePath, err := os.Executable()
+	if err != nil {
+		return ""
 	}
-	return ""
+
+	return filepath.Dir(exePath) + string(os.PathSeparator)
 }
 
-func pathExists(path string) bool {
+func GetWorkDir() string {
+	path, err := os.Getwd()
+	if err != nil {
+		return ""
+	}
+
+	return path + string(os.PathSeparator)
+}
+
+func PathFileExists(path string) bool {
 	_, err := os.Stat(path)
 	if err == nil {
 		return true
 	}
-	if os.IsNotExist(err) {
+
+	if os.IsExist(err) {
+		return true
+	}
+
+	return false
+}
+
+// 判断所给路径是否为文件夹
+func IsDir(path string) bool {
+	s, err := os.Stat(path)
+	if err != nil {
 		return false
 	}
-	return false
+	return s.IsDir()
+}
+
+// 从工作路径向上递归查找文件，返回文件绝对路径
+func RecursiveFind(fileName string) string {
+
+	return ""
 }

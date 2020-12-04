@@ -5,14 +5,15 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"os"
+	"time"
 )
 
 type Option struct {
 	Path       string // 日志文件路径
+	Level      string // 日志级别，debug info warn error panic fatal
 	MaxSize    int    // 文件多大开始切分
 	MaxBackups int    // 保留文件个数
 	MaxAge     int    // 文件保存多少天，maxBackups和maxAge都设置为0，则不会删除任何日志文件，全部保留
-	Level      string // 日志级别，debug info warn error panic fatal
 	Json       bool   // 是否用json格式
 	Std        bool   // 是否输出到控制台
 }
@@ -49,7 +50,7 @@ func Init(option *Option) {
 		StacktraceKey:  "S",
 		EncodeLevel:    zapcore.CapitalLevelEncoder,
 		LineEnding:     zapcore.DefaultLineEnding,
-		EncodeTime:     zapcore.RFC3339TimeEncoder, // ISO8601 UTC 时间格式
+		EncodeTime:     timeEncoder, // ISO8601 UTC 时间格式
 		EncodeDuration: zapcore.StringDurationEncoder,
 		EncodeCaller:   zapcore.ShortCallerEncoder, // 短路径编码器
 		EncodeName:     zapcore.FullNameEncoder,
@@ -109,4 +110,8 @@ func parseLevel(val string) zapcore.Level {
 	default:
 		return zap.DebugLevel
 	}
+}
+
+func timeEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
+	enc.AppendString(t.Format("2006-01-02 15:04:05"))
 }

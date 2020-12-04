@@ -7,9 +7,11 @@ import (
 
 func main() {
 	logger.Init(&logger.Option{
-		"logs/app.log",
-		0, 0, 0,
-		"debug", false, true})
+		Path : "logs/app.log",
+		Level: "debug",
+		MaxSize: 10,
+
+	})
 	// logger
 	zap.L().Info("success")
 	// Sugar
