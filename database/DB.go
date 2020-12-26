@@ -4,13 +4,17 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/sqlserver"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
+	"log"
+	"os"
 	"time"
 )
 
 type Option struct {
-	MaxIdleConn int // 最大空闲连接
-	MaxOpenConn int // 最大连接数
-	MaxLifeTime int // 空闲保活时间
+	MaxIdleConn   int           // 最大空闲连接
+	MaxOpenConn   int           // 最大连接数
+	MaxLifeTime   int           // 空闲保活时间
+	SlowThreshold time.Duration // 慢 SQL 阈值
 }
 
 var (
@@ -19,9 +23,10 @@ var (
 
 func NewOption() *Option {
 	return &Option{
-		MaxIdleConn: 10,
-		MaxOpenConn: 100,
-		MaxLifeTime: 7200,
+		MaxIdleConn:   10,
+		MaxOpenConn:   100,
+		MaxLifeTime:   7200,
+		SlowThreshold: 500 * time.Microsecond,
 	}
 }
 
@@ -30,12 +35,24 @@ func GetDB() *gorm.DB {
 }
 
 func Init(dbType, dsn string, option *Option) error {
-	var err error
+	var (
+		err  error
+		conf = &gorm.Config{
+			Logger: logger.New(
+				log.New(os.Stdout, "\r\n", log.LstdFlags),
+				logger.Config{
+					SlowThreshold: option.SlowThreshold,
+					LogLevel:      logger.Warn,
+					Colorful:      true,
+				},
+			),
+		}
+	)
 
 	if dbType == "mssql" {
-		db, err = gorm.Open(sqlserver.Open(dsn), &gorm.Config{})
+		db, err = gorm.Open(sqlserver.Open(dsn), conf)
 	} else if dbType == "mysql" {
-		db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+		db, err = gorm.Open(mysql.Open(dsn), conf)
 	}
 
 	dbPool, _ := db.DB()
