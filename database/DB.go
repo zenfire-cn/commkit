@@ -5,6 +5,7 @@ import (
 	"gorm.io/driver/sqlserver"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"io"
 	"log"
 	"os"
 	"time"
@@ -14,7 +15,8 @@ type Option struct {
 	MaxIdleConn   int           // 最大空闲连接
 	MaxOpenConn   int           // 最大连接数
 	MaxLifeTime   int           // 空闲保活时间
-	SlowThreshold time.Duration // 慢 SQL 阈值
+	SlowQueryTime time.Duration // 慢 SQL 阈值
+	SlowQueryLog  io.Writer     // 慢查询日志记录
 }
 
 var (
@@ -26,7 +28,8 @@ func NewOption() *Option {
 		MaxIdleConn:   10,
 		MaxOpenConn:   100,
 		MaxLifeTime:   7200,
-		SlowThreshold: 500 * time.Microsecond,
+		SlowQueryTime: 500 * time.Millisecond,
+		SlowQueryLog:  os.Stdout,
 	}
 }
 
@@ -39,11 +42,11 @@ func Init(dbType, dsn string, option *Option) error {
 		err  error
 		conf = &gorm.Config{
 			Logger: logger.New(
-				log.New(os.Stdout, "\r\n", log.LstdFlags),
+				log.New(option.SlowQueryLog, "\r\n", log.LstdFlags),
 				logger.Config{
-					SlowThreshold: option.SlowThreshold,
+					SlowThreshold: option.SlowQueryTime,
 					LogLevel:      logger.Warn,
-					Colorful:      true,
+					Colorful:      false,
 				},
 			),
 		}

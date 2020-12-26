@@ -6,10 +6,17 @@ import (
 )
 
 func main() {
-	// 初始化
-	// dsn := "sqlserver://sa:123456@127.0.0.1:1433?database=test&connection+timeout=30"
-	dsn := "root:123456@tcp(127.0.0.1:3306)/test?charset=utf8&parseTime=True&loc=Local" // mysql
-	if err := database.Init("mysql", dsn, database.NewOption()); err != nil {
+	var (
+		dsn = "root:joker8133xx@tcp(127.0.0.1:3306)/test?charset=utf8&parseTime=True&loc=Local" // mysql
+		// dsn    = "sqlserver://sa:123456@127.0.0.1:1433?database=test&connection+timeout=30"        // mssql
+		option = database.NewOption()
+	)
+
+	// option.SlowQueryTime = 300 * time.Millisecond  // 设置慢查询时间
+	// logFile, _ := os.OpenFile("SlowQuery.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0766)
+	// option.SlowQueryLog = logFile  // 设置慢查询日志
+
+	if err := database.Init("mysql", dsn, option); err != nil {
 		fmt.Println("err", err)
 	}
 
